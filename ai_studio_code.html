@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>somaf1x Launcher | Python Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nosifer&family=Orbitron:wght@400;700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #06b6d4;
+            --python: #ffe873;
+            --bg: #050505;
+            --card-bg: rgba(255,255,255,0.03);
+            --text: #ffffff;
+            --blood: #8a0303;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; cursor: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: transform 0.5s; /* Для ефекту перевороту */
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            width: 20px; height: 20px;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9999;
+            transition: transform 0.1s; mix-blend-mode: difference;
+        }
+        #cursor.active { background: var(--secondary); transform: scale(0.5); }
+
+        /* Matrix Background */
+        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.10; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+        
+        h1, h2, h3 { font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
+
+        /* Navigation */
+        nav {
+            padding: 20px 0; display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(5px); position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--secondary); letter-spacing: 2px; transition: 1s; }
+        .logo:hover { transform: rotate(360deg) scale(1.2); color: var(--python); }
+
+        /* Hero */
+        .hero { height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column; }
+        .hero h1 { font-size: 4rem; margin-bottom: 10px; text-shadow: 0 0 10px var(--primary); }
+        .hero p { font-size: 1.2rem; margin: 20px 0 40px; max-width: 700px; color: #ccc; }
+
+        /* Buttons */
+        .btn {
+            padding: 15px 40px; font-family: 'Orbitron'; font-weight: bold; text-decoration: none;
+            color: #fff; border: 2px solid var(--primary); position: relative; overflow: hidden;
+            display: inline-block; margin: 10px; transition: 0.3s;
+        }
+        .btn:hover { background: var(--primary); box-shadow: 0 0 20px var(--primary); }
+
+        /* Features */
+        .features { padding: 60px 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+        .card {
+            background: var(--card-bg); padding: 30px; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--secondary); }
+        .card i { font-size: 2rem; color: var(--primary); margin-bottom: 15px; }
+
+        /* --- STYLE SECTION --- */
+        .style-section { padding: 80px 0; }
+        .style-grid {
+            display: flex; flex-wrap: wrap; gap: 40px; justify-content: center;
+        }
+        
+        .style-card {
+            flex: 1; min-width: 300px; max-width: 500px;
+            background: #0a0a0a; border-radius: 15px; overflow: hidden; position: relative;
+            transition: 0.4s;
+        }
+        
+        .style-img-wrapper {
+            width: 100%; height: 300px; background: #111; position: relative;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .style-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .style-card:hover .style-img-wrapper img { transform: scale(1.05); }
+
+        .style-content { padding: 20px; text-align: center; }
+        .style-content h3 { margin-bottom: 10px; font-size: 1.4rem; }
+        .style-content p { font-size: 0.9rem; color: #888; }
+
+        .style-minimal { border: 1px solid #333; }
+        .style-minimal:hover { border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .style-minimal h3 { color: #fff; }
+
+        .style-hacked { border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+        .style-hacked:hover { box-shadow: 0 0 30px var(--primary), inset 0 0 20px var(--primary); }
+        .style-hacked h3 { color: var(--primary); text-shadow: 0 0 5px var(--primary); }
+        
+        /* Footer */
+        footer { padding: 50px 0; text-align: center; color: #666; border-top: 1px solid #222; font-size: 0.9rem; }
+        .tos-link { color: #500; text-decoration: underline; font-size: 0.8rem; transition: 0.3s; cursor: pointer; }
+        .tos-link:hover { color: #f00; text-shadow: 0 0 5px red; }
+        
+        /* Secret Dot */
+        .secret-dot { opacity: 0.1; cursor: pointer; transition: 0.3s; }
+        .secret-dot:hover { opacity: 1; color: red; font-weight: bold; }
+
+        /* --- BLOOD ToS MODAL --- */
+        .modal {
+            display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+        .modal-content {
+            margin: 5% auto; padding: 40px; border: 1px solid #300; width: 80%; max-width: 800px;
+            color: #ff0000; font-family: 'Nosifer', cursive; text-align: center;
+            box-shadow: inset 0 0 50px #300; animation: pulse 2s infinite;
+            overflow-y: auto; max-height: 90vh;
+        }
+        @keyframes pulse { 0% { box-shadow: inset 0 0 30px #300; } 50% { box-shadow: inset 0 0 100px #500; } 100% { box-shadow: inset 0 0 30px #300; } }
+        
+        .blood-drip {
+            font-size: 3rem; text-shadow: 2px 2px 0px #300; margin-bottom: 30px;
+            background: -webkit-linear-gradient(#f00, #500); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .close-btn { color: #888; float: right; font-size: 28px; font-weight: bold; cursor: pointer; font-family: sans-serif; }
+        .close-btn:hover { color: white; }
+        
+        /* RAT ALERT OVERLAY */
+        #rat-overlay {
+            display: none; 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(255, 0, 0, 0.4);
+            z-index: 20000;
+            pointer-events: none;
+            animation: warningFlash 0.2s infinite alternate;
+        }
+        @keyframes warningFlash {
+            from { background: rgba(255, 0, 0, 0.4); }
+            to { background: rgba(255, 0, 0, 0.1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <div id="rat-overlay"></div>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="container">
+        <!-- Nav -->
+        <nav>
+            <div class="logo">&lt;somaf1x /&gt;</div>
+            <div style="font-size: 0.8rem; font-family: monospace; color: #666;">
+                <i class="fab fa-python" style="color: var(--python);"></i> Py.Build
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <header class="hero">
+            <h1>SOMAF1X</h1>
+            <p>
+                Lightweight. Open-Source. Stylish.<br>
+                Найлегший спосіб грати. Підтримка <span style="color:var(--secondary)">Ely.by</span> та унікальний дизайн.
+            </p>
+            <div>
+                <a href="Launcher.exe" class="btn" download><i class="fas fa-download"></i> ЗАВАНТАЖИТИ</a>
+                <a href="https://github.com/your-repo" target="_blank" class="btn" style="border-color: #fff;"><i class="fab fa-github"></i> GITHUB</a>
+            </div>
+        </header>
+
+        <!-- Features -->
+        <section class="features">
+            <h2 style="text-align: center; margin-bottom: 40px;">Технічні <span style="color:var(--secondary)">характеристики</span></h2>
+            <div class="feature-grid">
+                <div class="card">
+                    <i class="fas fa-feather-alt"></i>
+                    <h3>Super Lightweight</h3>
+                    <p>Жодних Electron-фреймворків. Чистий Python. Запускається миттєво.</p>
+                </div>
+                <div class="card">
+                    <i class="fab fa-python" style="color: var(--python);"></i>
+                    <h3>Open Source</h3>
+                    <p>Весь код відкритий. Не віриш мені? Перевір сам на GitHub.</p>
+                </div>
+                <div class="card">
+                    <i class="fas fa-user-astronaut"></i>
+                    <h3>Ely.by Support</h3>
+                    <p>Інтеграція скінів Ely.by для Singleplayer. Грай красиво.</p>
+                </div>
+                <div class="card">
+                    <i class="fas fa-terminal"></i>
+                    <h3>Console Friendly</h3>
+                    <p>Логи прозорі. Ти бачиш все, що робить лаунчер.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- STYLES / GALLERY SECTION -->
+		
+        <section class="style-section">
+            <h2 style="text-align: center; margin-bottom: 50px;">ОБЕРИ СВІЙ <span style="color:var(--secondary)">ВАЙБ</span></h2>
+            
+            <div class="style-grid">
+                <!-- PHOTO 1 -->
+                <div class="style-card style-minimal">
+                    <div class="style-img-wrapper">
+                        <!-- ЗМІНИ ПОСИЛАННЯ НА КАРТИНКУ ТУТ -->
+                        <img src="https://i.ibb.co/DHcC1HhD/3-E40-E4-FC-C8-AD-4-B7-D-B813-38-A8-EFDB87-A4.png" alt="Classic Theme">
+                    </div>
+                    <div class="style-content">
+                        <h3>Minimal</h3>
+                        <p>Строгий дизайн для тих, хто любить тишу та комфорт. Нічого зайвого.</p>
+                    </div>
+                </div>
+
+                <!-- PHOTO 2 -->
+                <div class="style-card style-hacked">
+                    <div class="style-img-wrapper">
+                        <!-- ЗМІНИ ПОСИЛАННЯ НА КАРТИНКУ ТУТ -->
+                        <img src="https://i.ibb.co/TqNFNGSL/6-C7-A0-D69-8-CFA-43-A0-A677-19914108-CE24.png" alt="Hacked Theme">
+                    </div>
+                    <div class="style-content">
+                        <h3>Magma</h3>
+                        <p>Червоні та чорні кольори, разом з обсідіаном.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+			
+        <footer>
+            <p>Made with &lt;3 for somaf1x community.</p>
+            <p>Not affiliated with Mojang.</p>
+            <p style="margin-top:15px;">
+                <span id="tos-btn" class="tos-link">Terms of Service (READ CAREFULLY)</span>
+            </p>
+            <!-- Secret Dot Easter Egg -->
+            <span class="secret-dot" onclick="flipScreen()">.</span>
+        </footer>
+    </div>
+
+    <!-- BLOOD TOS MODAL -->
+    <div id="tos-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 class="blood-drip">УГОДА КОРИСТУВАЧА</h2>
+            <p>УВАГА: ЦЕЙ ТЕКСТ НАПИСАНО КРОВ'Ю (віртуальною).</p>
+            <br>
+            <p>1. Завантажуючи somaf1x, ви погоджуєтесь, що ваша душа частково належить коду.</p>
+            <br>
+            <p>2. Ми не несемо відповідальності, якщо ваш ПК полетить у космос через надмірний FPS.</p>
+            <br>
+            <p>3. Жодних повернень коштів (лаунчер безкоштовний, лол).</p>
+            <br>
+            <p>4. Ви зобов'язуєтесь ніколи не грати з чітами на публічних серверах. Інакше Херобрін прийде за вами.</p>
+            <br>
+            <p style="font-size: 0.8rem; color: #500;">(Якщо серйозно: софт безпечний, opensource, MIT License. Have fun.)</p>
+            <br>
+            <button class="btn" style="border-color: red; color: red;" onclick="document.getElementById('tos-modal').style.display='none'">Я ЗГОДЕН (КРОВ'Ю)</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // 1. Console Easter Egg
+        console.log("%c SYSTEM ALERT: RAT INJECTED SUCCESSFULLY...", "color: red; font-size: 20px; font-weight: bold; background: #000; padding: 10px;");
+        console.log("Just kidding. Check the code at GitHub. somaf1x");
+
+        // 2. Custom Cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mousedown', () => cursor.classList.add('active'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('active'));
+
+        // 3. ToS Modal Logic
+        const modal = document.getElementById("tos-modal");
+        const btn = document.getElementById("tos-btn");
+        const span = document.getElementsByClassName("close-btn")[0];
+        btn.onclick = function() { modal.style.display = "block"; }
+        span.onclick = function() { modal.style.display = "none"; }
+        window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; } }
+
+        // 4. Matrix Effect
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = "01SOMAF1X"; const fontSize = 14; const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        function draw() {
+            ctx.fillStyle = "rgba(5, 5, 5, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#22c55e"; ctx.font = fontSize + "px monospace";
+            for(let i=0; i<drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random()*chars.length));
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.98) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 50);
+
+        // 5. SECRET "RAT" TYPING EASTER EGG
+        let keyHistory = [];
+        const secretCode = "rat";
+        const ratOverlay = document.getElementById('rat-overlay');
+        document.addEventListener('keydown', (e) => {
+            keyHistory.push(e.key.toLowerCase());
+            if (keyHistory.length > secretCode.length) keyHistory.shift();
+            if (keyHistory.join('') === secretCode) {
+                alert("⚠️ SYSTEM COMPROMISED ⚠️");
+                ratOverlay.style.display = "block";
+                let count = 0;
+                let flash = setInterval(() => {
+                    ratOverlay.style.display = (ratOverlay.style.display === "none" ? "block" : "none");
+                    count++;
+                    if(count > 10) { clearInterval(flash); ratOverlay.style.display = "none"; }
+                }, 200);
+            }
+        });
+
+        // 6. SECRET DOT FUNCTION (Dinnerbone effect)
+        function flipScreen() {
+            document.body.style.transform = "rotate(180deg)";
+            setTimeout(() => {
+                document.body.style.transform = "rotate(0deg)";
+            }, 2000); // 2 seconds flipped
+        }
+    </script>
+</body>
+</html>
